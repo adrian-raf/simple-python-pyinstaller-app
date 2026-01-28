@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker { 
             image 'python:3.9-alpine' 
-            // args '-u root' // Kadang perlu ini jika ada masalah permission
+            args '-u root:root'
         }
     }
     options {
@@ -11,14 +11,12 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Alpine menggunakan python3, bukan python
                 sh 'python3 -m py_compile sources/add2vals.py sources/calc.py'
                 stash(name: 'compiled-results', includes: 'sources/*.py*')
             }
         }
         stage('Test') {
             steps {
-                // Kita perlu install pytest dulu karena image python:alpine masih kosong
                 sh 'pip install pytest'
                 sh 'pytest --junit-xml test-reports/results.xml sources/test_calc.py'
             }
@@ -30,7 +28,6 @@ pipeline {
         }
         stage('Deliver') { 
             steps {
-                // Install pyinstaller dulu
                 sh 'pip install pyinstaller'
                 sh "pyinstaller --onefile sources/add2vals.py" 
             }
