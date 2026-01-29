@@ -37,5 +37,19 @@ pipeline {
                 }
             }
         }
+        
+        stage('Manual Approval') {
+            steps {
+                input message: 'Lanjutkan ke tahap Deploy?'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh './dist/add2vals & echo $! > app.pid'
+                sleep(time: 1, unit: 'MINUTES')
+                sh 'kill $(cat app.pid) || true'
+            }
+        }
     }
 }
